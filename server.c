@@ -20,6 +20,9 @@
 
 //Define state machine states here, e.g.:
 #define INIT 0
+#define WAIT_FOR_SYN 2
+#define WAIT_FOR_ACK 3
+#define CONNECTED 4
 ...
 
 //Message flags
