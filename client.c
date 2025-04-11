@@ -21,6 +21,8 @@
 
 //Define state machine states here, e.g.:
 #define INIT 0
+#define WAIT_FOR_SYN 1
+#define WAIT_FOR_SYNACK 2
 ...
 
 
