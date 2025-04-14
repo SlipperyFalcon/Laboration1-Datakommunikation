@@ -21,8 +21,10 @@
 
 //Define state machine states here, e.g.:
 #define INIT 0
-#define WAIT_FOR_SYN 1
 #define WAIT_FOR_SYNACK 2
+#define SEND_ACK 3
+#define CONNECTED 4
+
 ...
 
 
@@ -195,7 +197,7 @@ int mySendTo(int sock, struct sockaddr* recvAddr)
 
 
 //State machine functions
-void connect()//Add input parameters if needed
+void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
 {
   /*Implement the three-way handshake state machine
   for the connection setup*/
@@ -209,8 +211,17 @@ void connect()//Add input parameters if needed
     switch (state)
     {
       case INIT:
-        /*actions to be executed if state == YOUR_STATE*/
-        state = NEW_STATE;
+		  printf("CLIENT: INIT -> SENDING SYN\n");
+
+		  msgToSend.flag = SYN;
+		  msgToSend.seqNr = 0;
+		  msgToSend.checkSum = checksumCalc(msgToSend);
+
+		  mySendTo(*sock, (struct sockaddr*)&serverName);
+		  start_timer(3);
+
+		  state = WAIT_FOR_SYNACK;
+
         break;
       case NEW_STATE:
         ...
