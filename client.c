@@ -13,8 +13,6 @@
 #include <netinet/udp.h>
 #include <signal.h>
 #include <sys/time.h>
-//Hej
-
 
 #define PORT 5555
 #define hostNameLength 50
@@ -209,9 +207,6 @@ void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if 
     /*Implement the three-way handshake state machine
     for the connection setup*/
 
-    //local variables if needed
-
-
     //Loop switch-case
     while(state != CONNECTED) //Condition to leave the state machine
     {
@@ -240,6 +235,7 @@ void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if 
                     msgToSend.checkSum = checksumCalc(msgToSend);
 
                     mySendTo(sock, (struct sockaddr*)&clientAddr);
+
                     newMessage = 0;
 
                     state = CONNECTED;
