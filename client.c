@@ -211,6 +211,7 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
 
     //local variables if needed
 
+    //remove me
 
     //Loop switch-case
     while(state != CONNECTED) //Condition to leave the state machine
