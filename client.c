@@ -13,7 +13,7 @@
 #include <netinet/udp.h>
 #include <signal.h>
 #include <sys/time.h>
-
+//hej
 
 #define PORT 5555
 #define hostNameLength 50
@@ -217,7 +217,7 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
 		  msgToSend.seqNr = 0;
 		  msgToSend.checkSum = checksumCalc(msgToSend);
 
-          mySendTo(sock, (struct sockaddr*)serverName);
+		  mySendTo(sock, (struct sockaddr*)serverName);
 		  start_timer(3);
 
 		  state = WAIT_FOR_SYNACK;
