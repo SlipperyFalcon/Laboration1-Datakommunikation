@@ -92,10 +92,17 @@ void timeout_handler()
   based on the state when the timer expires*/
   switch (state)
   {
-    case YOUR_STATE:
-      /*actions to be executed if state == YOUR_STATE*/
-      state = NEW_STATE;
-      break;
+    case WAIT_FOR_SYNACK:
+        stop_timer(3)
+        printf("CLIENT: SYNACK TIMEOUT -> SENDING SYN\n");
+
+        msgToSend.flag = SYN;
+        msgToSend.seqNr = 0;
+        msgToSend.checkSum = checksumCalc(msgToSend);
+
+        mySendTo(*sock, (struct sockaddr*)&serverName);
+        start_timer(3);
+        break;
     default:
       printf("Invalid option\n");
   }
@@ -199,37 +206,48 @@ int mySendTo(int sock, struct sockaddr* recvAddr)
 //State machine functions
 void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
 {
-  /*Implement the three-way handshake state machine
-  for the connection setup*/
+    /*Implement the three-way handshake state machine
+    for the connection setup*/
 
-  //local variables if needed
+    //local variables if needed
 
 
-  //Loop switch-case
-  while(1) //Add the condition to leave the state machine
-  {
-    switch (state)
+    //Loop switch-case
+    while(state != CONNECTED) //Condition to leave the state machine
     {
-      case INIT:
-		  printf("CLIENT: INIT -> SENDING SYN\n");
+        switch (state)
+        {
+            case INIT:
+                printf("CLIENT: INIT -> SENDING SYN\n");
 
-		  msgToSend.flag = SYN;
-		  msgToSend.seqNr = 0;
-		  msgToSend.checkSum = checksumCalc(msgToSend);
+                msgToSend.flag = SYN;
+                msgToSend.seqNr = 0;
+                msgToSend.checkSum = checksumCalc(msgToSend);
 
-		  mySendTo(*sock, (struct sockaddr*)&serverName);
-		  start_timer(3);
+                mySendTo(*sock, (struct sockaddr*)&serverName);
+                start_timer(3);
 
-		  state = WAIT_FOR_SYNACK;
+                state = WAIT_FOR_SYNACK;
 
-        break;
-      case NEW_STATE:
-        ...
-        break;
-      default:
-        printf("Invalid option\n");
+                break;
+            case WAIT_FOR_SYNACK:
+                if (newMessage == 1 && messageRecvd == SYNACK)
+                {
+                printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
+
+                msgToSend.flag = ACK;
+                msgToSend.seqNr = 0;
+                msgToSend.checkSum = checksumCalc(msgToSend);
+
+                mySendTo(*sock, (struct sockaddr*)&serverName);
+
+                state = CONNECTED;
+                }
+                break;
+            default:
+                printf("Invalid option\n");
+        }
     }
-  }
 }
 
 void transmit()//Add input parameters if needed
