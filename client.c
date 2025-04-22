@@ -13,7 +13,7 @@
 #include <netinet/udp.h>
 #include <signal.h>
 #include <sys/time.h>
-//hej
+
 
 #define PORT 5555
 #define hostNameLength 50
