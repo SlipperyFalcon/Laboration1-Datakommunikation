@@ -57,6 +57,9 @@ int newMessage = 0;
 message messageRecvd;
 message msgToSend = { 0 };
 
+int sock;
+struct sockaddr_in clientAddr;
+
 
 //Timer functions
 void start_timer(int duration)
@@ -84,14 +87,14 @@ void stop_timer()
     timerRunning = 0;
 }
 
-void timeout_handler(int sock, struct sockaddr_in* clientAddr)
+void timeout_handler(int signum)
 {
   /*Specify the actions to be executed
   based on the state when the timer expires*/
   switch (state)
   {
     case WAIT_FOR_SYNACK:
-        stop_timer(3);
+        stop_timer();
         printf("CLIENT: SYNACK TIMEOUT -> SENDING SYN\n");
 
         msgToSend.flag = SYN;
@@ -228,17 +231,30 @@ void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if 
             case WAIT_FOR_SYNACK:
                 if (newMessage == 1 && messageRecvd.flag == SYNACK)
                 {
-                    printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
-
-                    msgToSend.flag = DATAACK;
-                    msgToSend.seqNr = 0;
-                    msgToSend.checkSum = checksumCalc(msgToSend);
-
-                    mySendTo(sock, (struct sockaddr*)&clientAddr);
-
                     newMessage = 0;
 
-                    state = CONNECTED;
+                    // Check the checksum
+                    int recivedChecksum = messageRecvd.checkSum;
+                    messageRecvd.checkSum = 0;
+                    int calculatedChecksum = checksumCalc(messageRecvd);
+
+                    if (recivedChecksum == calculatedChecksum)
+                    {
+                      printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
+
+                      msgToSend.flag = DATAACK;
+                      msgToSend.seqNr = 0;
+                      msgToSend.checkSum = checksumCalc(msgToSend);
+  
+                      mySendTo(sock, (struct sockaddr*)&clientAddr);
+  
+                      state = CONNECTED;
+                    }
+                    else
+                    {
+                      printf("CLIENT: Checksum mismatch - ignoring packet\n");
+                    }
+                    
                 }
                 break;
             default:
@@ -291,7 +307,6 @@ void disconnect()//Add input parameters if needed
         state = NEW_STATE;
         break;
       case NEW_STATE:
-        ...
         break;
       default:
         printf("Invalid option\n");
@@ -301,8 +316,6 @@ void disconnect()//Add input parameters if needed
 
 
 int main(int argc, char *argv[]) {
-  int sock;
-  struct sockaddr_in clientAddr = {0};
   struct sockaddr_in clientSock = {0};
   char hostName[hostNameLength];
   pthread_t recvt;
