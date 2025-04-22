@@ -86,7 +86,7 @@ void stop_timer()
     timerRunning = 0;
 }
 
-void timeout_handler()
+void timeout_handler(int sock, struct sockaddr_in* clientAddr)
 {
   /*Specify the actions to be executed
   based on the state when the timer expires*/
@@ -100,7 +100,7 @@ void timeout_handler()
         msgToSend.seqNr = 0;
         msgToSend.checkSum = checksumCalc(msgToSend);
 
-        mySendTo(*sock, (struct sockaddr*)&serverName);
+        mySendTo(sock, (struct sockaddr*)&clientAddr);
         start_timer(3);
         break;
     default:
@@ -204,7 +204,7 @@ int mySendTo(int sock, struct sockaddr* recvAddr)
 
 
 //State machine functions
-void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if needed
+void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if needed
 {
     /*Implement the three-way handshake state machine
     for the connection setup*/
@@ -224,24 +224,25 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
                 msgToSend.seqNr = 0;
                 msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(sock, (struct sockaddr*)&serverName);
+                mySendTo(sock, (struct sockaddr*)&clientAddr);
                 start_timer(3);
 
                 state = WAIT_FOR_SYNACK;
 
                 break;
             case WAIT_FOR_SYNACK:
-                if (newMessage == 1 && messageRecvd == SYNACK)
+                if (newMessage == 1 && messageRecvd.flag == SYNACK)
                 {
-                printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
+                    printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
 
-                msgToSend.flag = DATAACK;
-                msgToSend.seqNr = 0;
-                msgToSend.checkSum = checksumCalc(msgToSend);
+                    msgToSend.flag = DATAACK;
+                    msgToSend.seqNr = 0;
+                    msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(sock, (struct sockaddr*)&serverName);
+                    mySendTo(sock, (struct sockaddr*)&clientAddr);
+                    newMessage = 0;
 
-                state = CONNECTED;
+                    state = CONNECTED;
                 }
                 break;
             default:
@@ -306,7 +307,7 @@ void disconnect()//Add input parameters if needed
 
 int main(int argc, char *argv[]) {
   int sock;
-  struct sockaddr_in serverName = {0};
+  struct sockaddr_in clientAddr = {0};
   struct sockaddr_in clientSock = {0};
   char hostName[hostNameLength];
   pthread_t recvt;
@@ -362,12 +363,12 @@ int main(int argc, char *argv[]) {
   //Create the receiving thread
   pthread_create(&recvt, NULL, recieveThread, &sock);
 
-  serverName.sin_family = AF_INET;
-  serverName.sin_port = htons(dstUdpPort);
-  serverName.sin_addr.s_addr = inet_addr(dstHost);
+  clientAddr.sin_family = AF_INET;
+  clientAddr.sin_port = htons(dstUdpPort);
+  clientAddr.sin_addr.s_addr = inet_addr(dstHost);
 
 
-  connect(sock, &serverName);//Add arguments if needed
+  connect(sock, &clientAddr);//Add arguments if needed
   transmit();//Add arguments if needed
   disconnect();//Add arguments if needed
 
