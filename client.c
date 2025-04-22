@@ -26,7 +26,6 @@
 #define SEND_ACK 3
 #define CONNECTED 4
 
-...
 
 
 //Message flags
@@ -94,7 +93,7 @@ void timeout_handler()
   switch (state)
   {
     case WAIT_FOR_SYNACK:
-        stop_timer(3)
+        stop_timer(3);
         printf("CLIENT: SYNACK TIMEOUT -> SENDING SYN\n");
 
         msgToSend.flag = SYN;
