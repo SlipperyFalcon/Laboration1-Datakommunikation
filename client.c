@@ -205,7 +205,7 @@ int mySendTo(int sock, struct sockaddr* recvAddr)
 
 
 //State machine functions
-void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
+void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if needed
 {
     /*Implement the three-way handshake state machine
     for the connection setup*/
@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
   serverName.sin_addr.s_addr = inet_addr(dstHost);
 
 
-  connect();//Add arguments if needed
+  connect(sock, &serverName);//Add arguments if needed
   transmit();//Add arguments if needed
   disconnect();//Add arguments if needed
 
