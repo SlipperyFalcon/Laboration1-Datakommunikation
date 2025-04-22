@@ -225,7 +225,7 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
                 msgToSend.seqNr = 0;
                 msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(*sock, (struct sockaddr*)&serverName);
+                mySendTo(sock, (struct sockaddr*)&serverName);
                 start_timer(3);
 
                 state = WAIT_FOR_SYNACK;
@@ -236,11 +236,11 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
                 {
                 printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
 
-                msgToSend.flag = ACK;
+                msgToSend.flag = DATAACK;
                 msgToSend.seqNr = 0;
                 msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(*sock, (struct sockaddr*)&serverName);
+                mySendTo(sock, (struct sockaddr*)&serverName);
 
                 state = CONNECTED;
                 }
