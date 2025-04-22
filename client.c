@@ -25,7 +25,7 @@
 #define SEND_ACK 3
 #define CONNECTED 4
 
-...
+//Add new states above this line
 
 
 //Message flags
@@ -204,7 +204,7 @@ int mySendTo(int sock, struct sockaddr* recvAddr)
 
 
 //State machine functions
-void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
+void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if needed
 {
     /*Implement the three-way handshake state machine
     for the connection setup*/
@@ -224,29 +224,17 @@ void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
                 msgToSend.seqNr = 0;
                 msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(*sock, (struct sockaddr*)&serverName);
-                start_timer(3);
+          mySendTo(sock, (struct sockaddr*)serverName);
+		  start_timer(3);
 
                 state = WAIT_FOR_SYNACK;
 
-                break;
-            case WAIT_FOR_SYNACK:
-                if (newMessage == 1 && messageRecvd == SYNACK)
-                {
-                printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
-
-                msgToSend.flag = ACK;
-                msgToSend.seqNr = 0;
-                msgToSend.checkSum = checksumCalc(msgToSend);
-
-                mySendTo(*sock, (struct sockaddr*)&serverName);
-
-                state = CONNECTED;
-                }
-                break;
-            default:
-                printf("Invalid option\n");
-        }
+        break;
+      case NEW_STATE:
+        //what new state does
+        break;
+      default:
+        printf("Invalid option\n");
     }
 }
 
@@ -268,7 +256,7 @@ void transmit()//Add input parameters if needed
         state = NEW_STATE;
         break;
       case NEW_STATE:
-        ...
+        //what new state does
         break;
       default:
         printf("Invalid option\n");
@@ -295,7 +283,6 @@ void disconnect()//Add input parameters if needed
         state = NEW_STATE;
         break;
       case NEW_STATE:
-        ...
         break;
       default:
         printf("Invalid option\n");
@@ -367,7 +354,7 @@ int main(int argc, char *argv[]) {
   serverName.sin_addr.s_addr = inet_addr(dstHost);
 
 
-  connect();//Add arguments if needed
+  connect(sock &serverName);//Add arguments if needed
   transmit();//Add arguments if needed
   disconnect();//Add arguments if needed
 
