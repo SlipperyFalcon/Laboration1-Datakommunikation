@@ -13,11 +13,6 @@
 #include <netinet/udp.h>
 #include <signal.h>
 #include <sys/time.h>
-//Hej
-
-
-// try to push???
-
 
 #define PORT 5555
 #define hostNameLength 50
@@ -213,10 +208,6 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
     /*Implement the three-way handshake state machine
     for the connection setup*/
 
-    //local variables if needed
-
-    //remove me
-
     //Loop switch-case
     while(state != CONNECTED) //Condition to leave the state machine
     {
@@ -236,17 +227,18 @@ void connect(int sock, struct sockaddr_in* serverName)//Add input parameters if 
 
                 break;
             case WAIT_FOR_SYNACK:
-                if (newMessage == 1 && messageRecvd == SYNACK)
+                if (newMessage == 1 && messageRecvd.flag == SYNACK)
                 {
-                printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
+                    printf("CLIENT: WAIT_FOR_SYNACK -> SENDING ACK\n");
 
-                msgToSend.flag = DATAACK;
-                msgToSend.seqNr = 0;
-                msgToSend.checkSum = checksumCalc(msgToSend);
+                    msgToSend.flag = DATAACK;
+                    msgToSend.seqNr = 0;
+                    msgToSend.checkSum = checksumCalc(msgToSend);
 
-                mySendTo(sock, (struct sockaddr*)&serverName);
+                    mySendTo(sock, (struct sockaddr*)&serverName);
+                    newMessage = 0;
 
-                state = CONNECTED;
+                    state = CONNECTED;
                 }
                 break;
             default:
