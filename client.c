@@ -25,7 +25,7 @@
 #define SEND_ACK 3
 #define CONNECTED 4
 
-...
+//Add new states above this line
 
 
 //Message flags
@@ -224,7 +224,7 @@ void connect(int sock, struct sockaddr_in*)//Add input parameters if needed
 
         break;
       case NEW_STATE:
-        ...
+        //what new state does
         break;
       default:
         printf("Invalid option\n");
@@ -250,7 +250,7 @@ void transmit()//Add input parameters if needed
         state = NEW_STATE;
         break;
       case NEW_STATE:
-        ...
+        //what new state does
         break;
       default:
         printf("Invalid option\n");
