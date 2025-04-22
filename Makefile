@@ -1,3 +1,4 @@
+// komment
 CC = gcc
 CFLAGS = -Wall
 PROGRAMS = client server
