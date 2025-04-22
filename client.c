@@ -265,7 +265,6 @@ void transmit()//Add input parameters if needed
         state = NEW_STATE;
         break;
       case NEW_STATE:
-        ...
         break;
       default:
         printf("Invalid option\n");
