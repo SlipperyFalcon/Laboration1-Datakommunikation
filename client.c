@@ -25,6 +25,7 @@
 #define CONNECTED 4
 #define WAIT_FOR_FINACK 5
 #define DISCONNECTED 6
+#define WAIT_GBN 7
 
 
 
@@ -49,7 +50,7 @@ typedef struct messageToSend
 
 //Global variables
 int state = INIT;
-int windowSize = 0;
+int windowSize = 2;
 int windowBase = 0;
 int nextPacket = 0;
 
@@ -243,8 +244,6 @@ void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if 
 
                 break;
             case WAIT_FOR_SYNACK:
-                if (timerRunning == 0)
-                    timeout_handler(sock, clientAddr);
                 if (newMessage == 1 && messageRecvd.flag == SYNACK)
                 {
                     newMessage = 0;
@@ -279,25 +278,61 @@ void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if 
     }
 }
 
-void transmit()//Add input parameters if needed
+void transmit(int sock, struct sockaddr_in* clientAddr, char[] dataToSend)//Add input parameters if needed
 {
 
   /*Implement the sliding window state machine*/
 
   //local variables if needed
-
+    int[8] ackBuffer;
+    nrBuffered = 0;
 
   //Loop switch-case
   while(1) //Add the condition to leave the state machine
   {
     switch (state)
     {
-      case YOUR_STATE:
-        /*actions to be executed if state == YOUR_STATE*/
-        state = NEW_STATE;
-        break;
-      case NEW_STATE:
-        break;
+      case WAIT_GBN:
+          if (next >= windowBase && next <= (windowBase + windowSize))
+          {
+              printf("CLIENT: GBN -> SENDING package nr:%n\n", &nextPacket);
+
+              msgToSend.flag = DATA;
+              msgToSend.seqNr = nextPacket;
+              msgToSend.data = dataToSend[nextPacket];
+              msgToSend.checkSum = checksumCalc(msgToSend);
+
+              mySendTo(sock, (struct sockaddr*)&clientAddr);
+              start_timer(3);
+          }
+          else if (newMessage == 1 && messageRecvd.flag == DATAACK)
+          {
+              if (messageRecvd.seqNr == windowBase)
+              {
+                  windowBase++;
+                  stop_timer;
+                  start_timer(3);
+              }
+              else if (messageRecvd.seqNr > windowBase)
+                  ackBuffer[nrBuffered++] = messageRecvd.seqNr;  // add an out of order ACK to the buffer
+          }
+          else if (nrBuffered > 0)
+          {
+              // check the buffer
+              for (int i = 0; i < 8; i++)
+              {
+                  if (ackBuffer[i] == windowBase)
+                  {
+                      windowBase++;
+                      stop_timer;
+                      start_timer(3);
+                      ackBuffer[i] = default;
+                  }
+                  else if (ackBuffer[i] < windowBase)
+                      ackBuffer[i] = default;
+              }
+          }
+          break;
       default:
         printf("Invalid option\n");
     }
@@ -311,14 +346,14 @@ void disconnect(int sock, struct sockaddr_in* clientAddr)//Add input parameters 
   for the teardown*/
 
   //local variables if needed
-    int nrTimeouts = 0;
+    //int nrTimeouts = 0;       // do we implement the timeout limit?
 
   //Loop switch-case
-  while(1) //Add the condition to leave the state machine
+  while(state != INIT) //Add the condition to leave the state machine
   {
     switch (state)
     {
-      case INIT:
+      case CONNECTED:
           printf("CLIENT: INIT -> SENDING FIN\n");
 
           msgToSend.flag = FIN;
@@ -331,9 +366,8 @@ void disconnect(int sock, struct sockaddr_in* clientAddr)//Add input parameters 
           state = WAIT_FOR_FINACK;
           break;
       case WAIT_FOR_FINACK:
-          if (timeout_handler(, ))
           printf("CLIENT: WAIT_FOR_FINACK -> TERMINATING CONNECTION\n");
-
+          
           msgToSend.flag = ACK;
           msgToSend.seqNr = 0;
           msgToSend.checkSum = checksumCalc(msgToSend);
@@ -412,7 +446,7 @@ int main(int argc, char *argv[]) {
 
 
   connect(sock, &clientAddr);//Add arguments if needed
-  transmit();//Add arguments if needed
+  transmit(sock, &clientAddr, dataContent);//Add arguments if needed
   disconnect(sock, &clientAddr);//Add arguments if needed
 
 
