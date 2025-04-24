@@ -20,10 +20,9 @@
 
 //Define state machine states here, e.g.:
 #define INIT 0
-#define WAIT_FOR_SYN 2
-#define WAIT_FOR_ACK 3
-#define CONNECTED 4
-...
+#define WAIT_FOR_SYN 1
+#define SEND_ACK 2
+#define CONNECTED 3
 
 //Message flags
 #define SYN 0
@@ -216,22 +215,21 @@ int makeSocket(unsigned short int port) {
 
 
 //State machine functions
-void connect()//Add input parameters if needed
+void connect(int sock, struct sockaddr_in* clientAddr)//Add input parameters if needed
 {
   /*Implement the three-way handshake state machine
   for the connection setup*/
 
-  //local variables if needed
-
-
   //Loop switch-case
-  while(1) //Add the condition to leave the state machine
+  while(state != CONNECTED) //Condition to leave the state machine
   {
     switch (state)
     {
       case INIT:
-        /*actions to be executed if state == YOUR_STATE*/
-        state = NEW_STATE;
+        
+      
+        state = WAIT_FOR_SYN;
+
         break;
       case NEW_STATE:
         ...
